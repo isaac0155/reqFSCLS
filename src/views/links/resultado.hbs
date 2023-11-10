@@ -1,0 +1,220 @@
+<div class="container p-4 bg-white">
+    <div class="text-center p-3 align-items-center">
+        <h4>Resultado de {{res.nombre}}</h4>
+        
+    </div>
+    <div class="row col-md-9s mx-auto" >
+        <div class="col-lg-5 mx-auto" style="background: rgb(255, 255, 255);">
+            <table class="table table-sm table-hover">
+                {{#if user.Administrador}}
+                    
+                <tr>
+                    <td style="font-weight: bold; width: 200px;">PM:</td>
+                    <td>{{res.pm}}</td>
+                </tr>
+                {{/if}}
+                <tr>
+                    <td style="font-weight: bold; width: 200px;">Requerimiento Fiscal:</td>
+                    <td>{{res.nombre}}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; width: 200px;">Responsable:</td>
+                    <td>{{res.ad}}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; width: 200px;">Fecha de solicitud:</td>
+                    <td>{{res.fecha}}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; width: 200px;">Tipo Busqueda:</td>
+                    <td>{{res.tipoBusqueda}}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; width: 200px; word-break:break-all;">Datos Buscados:</td>
+                    <td style="word-break:break-all;">{{res.entradaBusqueda}}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; width: 200px;">Datos Solicitados:</td>
+                    <td>{{res.datoSolicitado}}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; width: 200px;">Rango Busqueda:</td>
+                    <td>{{res.rangoBusqueda}}</td>
+                </tr>
+            </table>
+            {{#if res.archivo}}
+            <div class="alert alert-success" role="alert">
+                <a href="/links/download/{{res.nombre}}">Click aqui para descargar {{res.archivo}} archivos adjuntos</a>
+            </div>
+            {{else}}
+            <div class="alert alert-warning" role="alert">
+                No hay Archivos Adjuntos
+            </div>
+            {{/if}}
+        </div>
+
+        <textarea class="" style="font-size: 14px;" name="" id="myTextarea" cols="30" rows="10"
+            disabled>{{res.resultado}}</textarea>
+        <button id="copyButton" class="btn btn-secondary" onclick="copyToClipboard()">Copiar</button>
+
+        
+    </div>
+
+<!-- Modal -->
+<div class="modal fade" id="miModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="exampleModalLabel">La busqueda está en proceso</h6>
+            </div>
+            <div class="modal-body d-flex justify-content-center">
+                {{!-- <div class="spinner-grow text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div> --}}
+                    {{!-- <span class="loader mt-0"></span> --}}
+                <br>
+                <h6 class="fw-light" style="margin-left: 5px; margin-top:-1px; font-size: 15px" >Este proceso puede demorar dependiendo la complejidad de busqueda...</h6>
+
+            </div>
+            <div class="p-2">
+                <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0"
+                    aria-valuemax="100">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning text-dark" id="progress" style="width: 15%">15%</div>
+                </div>
+                <div class="text-center d-flex justify-content-center mt-2">
+                    <div class="spinner-border text-warning spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="fw-light fs-6" style="margin-left: 10px; margin-top:-5px;" id="texto">Esperando a Mits</p>
+                </div>
+            </div>
+            <div class="modal-footer text-left">
+                <a href="/links/requerimientoFiscal" target="_blank">Hacer otro RRFF</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+        
+</div>
+<script>
+    socket.on('server:progress{{res.nombre}}', (valor, avance) => {
+        console.log(valor,avance)
+        //location.reload();
+        var progress = document.getElementById('progress')
+        var detalle = document.getElementById('texto')
+        progress.style.width = valor + '%'
+        progress.innerHTML = valor + '%'
+
+        detalle.innerHTML = avance
+
+    });
+    socket.on('server:solicitudRRFF{{res.nombre}}', () => {
+            location.reload();
+
+        });
+    document.addEventListener("DOMContentLoaded", function () {
+            var myModal = new bootstrap.Modal(document.getElementById('miModal'), {});
+
+            {{#if res.body }}
+            myModal.show();
+            {{else }}
+            {{/if}}
+
+        });
+
+    function copyToClipboard() {
+            const textarea = document.getElementById('myTextarea');
+            const button = document.getElementById('copyButton');
+
+            textarea.disabled = false; // Temporalmente habilitar el textarea para copiar
+            textarea.select();
+            document.execCommand('copy');
+            textarea.disabled = true; // Deshabilitar nuevamente el textarea
+
+            // Cambiar el texto y el color del botón
+            button.innerHTML = 'Copiado!';
+            button.classList.remove('btn-secondary');
+            button.classList.add('btn-success');
+
+            // Volver al estado original después de 2 segundos (2000 milisegundos)
+            setTimeout(() => {
+                button.innerHTML = 'Copiar';
+                button.classList.remove('btn-success');
+                button.classList.add('btn-secondary');
+            }, 2000);
+        }
+
+
+
+    var btn = document.getElementById('agregar');
+    var invalid = document.getElementById('invalid');
+    var nit = document.getElementById('nit');
+    var contenido = document.querySelector('ol.list-group.list-group-numbered');
+
+    function verificarNit() {
+        nit.value = Number(nit.value);
+        if (nit.value.length > 4) {
+            socket.emit('cliente:verifNit', nit.value);
+        } else {
+            invalid.innerHTML = "NIT muy corto";
+            nit.className = 'form-control is-invalid';
+            btn.disabled = true;
+        }
+        //console.log(nit.value);
+    }
+    function agregarNit() {
+        nit.value = Number(nit.value);
+        socket.emit('cliente:registrarNit', nit.value);
+    }
+    function nitDiv(id, nit, newNit) {
+        const div = document.createElement("li");
+        div.innerHTML = `
+            --> ${nit}
+            <div class="text-end">
+                <button type="button" onclick="eliminar(${id})" class="btn btn-outline-danger" disabled>Eliminar</button>
+            </div>
+        `;
+        if (nit == newNit) {
+            div.className = 'list-group-item list-group-item-success list-group-item-action';
+            div.innerHTML += `Nit nuevo Agregado Exitosamente`
+        } else {
+            div.className = 'list-group-item list-group-item-action';
+        }
+
+        return div;
+    }
+    function eliminar(id) {
+        socket.emit('cliente:eliminarNit', id);
+    }
+
+    //sockets
+    socket.on('server:nitLibre', () => {
+        //invalid.innerHTML = "NIT disponible.";
+        nit.className = 'form-control is-valid';
+        btn.disabled = false;
+    });
+    socket.on('server:nitUsado', () => {
+        invalid.innerHTML = "Este NIT ya EXISTE, usa otro.";
+        nit.className = 'form-control is-invalid';
+        btn.disabled = true;
+    });
+    socket.on('server:nitRegistrado', (nit1, nits) => {
+
+        var span = document.querySelector('.badge.text-bg-danger');
+        if (nit1 == null) {
+            span.style.display = '';
+        } else {
+            span.style.display = 'none';
+        }
+        contenido.innerHTML = "";
+        nits.forEach(async function (element, index) {
+            contenido.append(nitDiv(element.idNit, element.nit, nit1));
+        });
+        nit.value = '';
+        invalid.innerHTML = "NIT muy corto";
+        nit.className = 'form-control is-invalid';
+        btn.disabled = true;
+    });
+</script>

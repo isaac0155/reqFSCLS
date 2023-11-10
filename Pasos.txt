@@ -1,0 +1,14 @@
+npm init --yes //crea un json
+npm i express express-handlebars express-session mysql express-mysql-session morgan bcryptjs passport passport-local timeago.js connect-flash express-validator 
+npm i nodemon -d
+
+git add .
+git commit -m "mensaje"
+git push -u origin main
+escribir
+
+git reset --hard HEAD
+git pull
+
+chrome://flags -> buscador -> Insecure origins treated as secure 
+poner con enabled http://83.229.39.231:4000

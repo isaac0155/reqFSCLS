@@ -1,0 +1,165 @@
+<div class="container p-4 bg-white">
+    <div class="text-center p-3 mb-4 align-items-center">
+        <h2>Historial de {{ad.ad}}</h2>
+        
+    </div>
+    <div class="" style="display:flex; font-size: 14px;">
+        <div class="col-auto">
+            <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item-success list-group-item list-group-item-action active" id="list-home-list" data-bs-toggle="list"
+                    href="#list-home" role="tab" aria-controls="list-home">Historial RRFF ({{cantidad.cantidad}})</a>
+                <a class="list-group-item-success list-group-item list-group-item-action" id="list-profile-list" data-bs-toggle="list"
+                    href="#list-profile" role="tab" aria-controls="list-profile">Historial Administrativo ({{cantidad1.cantidad}})</a>
+            </div>
+        </div>
+        <div class="" >
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
+                    <table class="table table-hover table-striped table-bordered fw-normal">
+                        <thead>
+                            <tr class="fw-lighter text-white bg-dark">
+                                {{#if user.Administrador}}
+                                {{/if}}
+                                <th scope="col">PM</th>
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Fecha Hora</th>
+                                <th scope="col">Tipo</th>
+                                <th scope="col">Busqueda</th>
+                                <th scope="col">Datos</th>
+                                <th scope="col">Archivos</th>
+                                <th scope="col">Rango de Busqueda</th>
+                                <th scope="col">Ver Resultado</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each historialReq}}
+                            <tr>
+                                {{#if nombreRol}}
+                                <td>{{pm}}</td>
+                                {{else}}
+                                <td>-</td>
+
+                                {{/if}}
+                                <td>{{nombre}}</td>
+                                <td>{{fecha}}</td>
+                                <td>{{tipoBusqueda}}</td>
+                                <td style="max-width: 300px; word-break:break-all;">{{entradaBusqueda}}</td>
+                                <td style="max-width: 200px; word-break:break-all;">{{datoSolicitado}}</td>
+                                <td>{{archivo}}</td>
+                                <td>{{rangoBusqueda}}</td>
+                                <td><a href="/links/requerimientoFiscal/resultado/{{nombre}}">Ver Resultados</a></td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td>
+                                    Aun no registras cambios en el Historial
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">
+                    <table class="table table-hover table-striped table-bordered ">
+                        <thead>
+                            <tr class="fw-lighter text-white bg-dark">
+                                <th scope="col">Fecha Hora</th>
+                                <th scope="col">Acción</th>
+                                <th scope="col">Cambio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each historial}}
+                            <tr>
+                                <td>{{fecha}}</td>
+                                <td>{{accion}}</td>
+                                <td>{{cambio}}</td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td>
+                    
+                                    Aun no registras cambios en el Historial
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+        
+</div>
+<script>
+    var btn = document.getElementById('agregar');
+    var invalid = document.getElementById('invalid');
+    var nit = document.getElementById('nit');
+    var contenido = document.querySelector('ol.list-group.list-group-numbered');
+
+    function verificarNit() {
+        nit.value = Number(nit.value);
+        if (nit.value.length > 4) {
+            socket.emit('cliente:verifNit', nit.value);
+        } else {
+            invalid.innerHTML = "NIT muy corto";
+            nit.className = 'form-control is-invalid';
+            btn.disabled = true;
+        }
+        //console.log(nit.value);
+    }
+    function agregarNit() {
+        nit.value = Number(nit.value);
+        socket.emit('cliente:registrarNit', nit.value);
+    }
+    function nitDiv(id, nit, newNit) {
+        const div = document.createElement("li");
+        div.innerHTML = `
+            --> ${nit}
+            <div class="text-end">
+                <button type="button" onclick="eliminar(${id})" class="btn btn-outline-danger" disabled>Eliminar</button>
+            </div>
+        `;
+        if (nit == newNit) {
+            div.className = 'list-group-item list-group-item-success list-group-item-action';
+            div.innerHTML += `Nit nuevo Agregado Exitosamente`
+        } else {
+            div.className = 'list-group-item list-group-item-action';
+        }
+
+        return div;
+    }
+    function eliminar(id) {
+        socket.emit('cliente:eliminarNit', id);
+    }
+
+    //sockets
+    socket.on('server:nitLibre', () => {
+        //invalid.innerHTML = "NIT disponible.";
+        nit.className = 'form-control is-valid';
+        btn.disabled = false;
+    });
+    socket.on('server:nitUsado', () => {
+        invalid.innerHTML = "Este NIT ya EXISTE, usa otro.";
+        nit.className = 'form-control is-invalid';
+        btn.disabled = true;
+    });
+    socket.on('server:nitRegistrado', (nit1, nits) => {
+
+        var span = document.querySelector('.badge.text-bg-danger');
+        if (nit1 == null) {
+            span.style.display = '';
+        } else {
+            span.style.display = 'none';
+        }
+        contenido.innerHTML = "";
+        nits.forEach(async function (element, index) {
+            contenido.append(nitDiv(element.idNit, element.nit, nit1));
+        });
+        nit.value = '';
+        invalid.innerHTML = "NIT muy corto";
+        nit.className = 'form-control is-invalid';
+        btn.disabled = true;
+    });
+</script>
