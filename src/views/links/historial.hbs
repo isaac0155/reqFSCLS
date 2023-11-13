@@ -36,7 +36,11 @@
                             {{#each historialReq}}
                             <tr>
                                 {{#if nombreRol}}
-                                <td>{{pm}}</td>
+                                    {{#if pm}}
+                                    <td>{{pm}}</td>
+                                    {{else}}
+                                    <td>-</td>
+                                    {{/if}}
                                 {{else}}
                                 <td>-</td>
 
