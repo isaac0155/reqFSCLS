@@ -38,7 +38,8 @@
             <div class="tab-content" id="nav-tabContent">
                 <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
 
-                    <button onclick="exportarTablaAExcel('miTabla', 'Reporte RRFF', '9')" class="btn btn-warning btn-sm">
+                    <button onclick="exportarTablaAExcel('miTabla', 'Reporte RRFF', '9')"
+                        class="btn btn-warning btn-sm">
                         Exportar a Excel
                     </button>
 
@@ -87,7 +88,8 @@
                     </table>
                 </div>
                 <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">
-                    <button onclick="exportarTablaAExcel('miTabla1', 'Reporte Administrativo', false)" class="btn btn-primary btn-sm">
+                    <button onclick="exportarTablaAExcel('miTabla1', 'Reporte Administrativo', false)"
+                        class="btn btn-primary btn-sm">
                         Exportar a Excel
                     </button>
                     <table class="table table-hover table-striped table-bordered " id="miTabla1">
@@ -158,75 +160,75 @@
             search: true
         });
     });
-        function exportarTablaAExcel(tableId, nombreArchivo = '', elimi) {
-            var datos = $('#' + tableId).bootstrapTable('getData');
+    function exportarTablaAExcel(tableId, nombreArchivo = '', elimi) {
+        var datos = $('#' + tableId).bootstrapTable('getData');
 
-            var datosFiltrados = datos.map(objeto => {
+        var datosFiltrados = datos.map(objeto => {
+            var nuevoObjeto = {};
+            Object.keys(objeto).forEach(clave => {
+                // Verificar si el nombre del atributo es numérico
+                if (!isNaN(clave)) {
+                    nuevoObjeto[clave] = objeto[clave];
+                }
+            });
+            return nuevoObjeto;
+        });
+
+        // Convertir los datos filtrados a JSON y mostrarlos en la consola
+        var jsonDatos = JSON.stringify(datosFiltrados, null, 2); // Indenta el JSON para una mejor legibilidad
+        var datos = eliminarAtributoDeDatos(datosFiltrados, elimi);
+
+        var $table = $('#' + tableId);
+        var datosOriginales = $table.bootstrapTable('getData', { unfiltered: true });
+        var encabezados = [];
+        var hojaDatos = [];
+
+        // Obtener los encabezados de la tabla
+        $table.find('thead > tr:first > th').each(function () {
+            var encabezado = $(this).text().trim();
+            encabezados.push(encabezado);
+        });
+
+        // Agregar los encabezados al inicio de los datos
+        //console.log(encabezados);
+        var mapeoNombres = encabezados
+        var datosModificados = cambiarNombresDeAtributos(datos, mapeoNombres);
+        //console.log(datosModificados)
+        // Crear un nuevo libro y una hoja con los datos
+        var libro = XLSX.utils.book_new();
+        var hoja = XLSX.utils.json_to_sheet(datosModificados);
+        XLSX.utils.book_append_sheet(libro, hoja, "Datos");
+
+        // Escribir el libro y descargarlo
+        XLSX.writeFile(libro, nombreArchivo ? nombreArchivo + '.xlsx' : 'export.xlsx');
+    }
+    function cambiarNombresDeAtributos(datos, mapeoNombres) {
+        // Cambiar los nombres de los atributos según el mapeo proporcionado
+        return datos.map(objeto => {
+            var nuevoObjeto = {};
+            Object.keys(objeto).forEach(claveAntigua => {
+                var claveNueva = mapeoNombres[claveAntigua] || claveAntigua;
+                nuevoObjeto[claveNueva] = objeto[claveAntigua];
+            });
+            return nuevoObjeto;
+        });
+    }
+    function eliminarAtributoDeDatos(datos, nombreAtributo) {
+        if (nombreAtributo) {
+            // Filtrar los datos, eliminando el atributo especificado
+            return datos.map(objeto => {
                 var nuevoObjeto = {};
                 Object.keys(objeto).forEach(clave => {
-                    // Verificar si el nombre del atributo es numérico
-                    if (!isNaN(clave)) {
+                    if (clave !== nombreAtributo) {
                         nuevoObjeto[clave] = objeto[clave];
                     }
                 });
                 return nuevoObjeto;
             });
-
-            // Convertir los datos filtrados a JSON y mostrarlos en la consola
-            var jsonDatos = JSON.stringify(datosFiltrados, null, 2); // Indenta el JSON para una mejor legibilidad
-            var datos = eliminarAtributoDeDatos(datosFiltrados, elimi);
-
-            var $table = $('#' + tableId);
-            var datosOriginales = $table.bootstrapTable('getData', { unfiltered: true });
-            var encabezados = [];
-            var hojaDatos = [];
-
-            // Obtener los encabezados de la tabla
-            $table.find('thead > tr:first > th').each(function () {
-                var encabezado = $(this).text().trim();
-                encabezados.push(encabezado);
-            });
-
-            // Agregar los encabezados al inicio de los datos
-            //console.log(encabezados);
-            var mapeoNombres = encabezados
-            var datosModificados = cambiarNombresDeAtributos(datos, mapeoNombres);
-            //console.log(datosModificados)
-            // Crear un nuevo libro y una hoja con los datos
-            var libro = XLSX.utils.book_new();
-            var hoja = XLSX.utils.json_to_sheet(datosModificados);
-            XLSX.utils.book_append_sheet(libro, hoja, "Datos");
-
-            // Escribir el libro y descargarlo
-            XLSX.writeFile(libro, nombreArchivo ? nombreArchivo + '.xlsx' : 'export.xlsx');
+        } else {
+            return datos
         }
-        function cambiarNombresDeAtributos(datos, mapeoNombres) {
-            // Cambiar los nombres de los atributos según el mapeo proporcionado
-            return datos.map(objeto => {
-                var nuevoObjeto = {};
-                Object.keys(objeto).forEach(claveAntigua => {
-                    var claveNueva = mapeoNombres[claveAntigua] || claveAntigua;
-                    nuevoObjeto[claveNueva] = objeto[claveAntigua];
-                });
-                return nuevoObjeto;
-            });
-        }
-        function eliminarAtributoDeDatos(datos, nombreAtributo) {
-            if (nombreAtributo) {
-                // Filtrar los datos, eliminando el atributo especificado
-                return datos.map(objeto => {
-                    var nuevoObjeto = {};
-                    Object.keys(objeto).forEach(clave => {
-                        if (clave !== nombreAtributo) {
-                            nuevoObjeto[clave] = objeto[clave];
-                        }
-                    });
-                    return nuevoObjeto;
-                });
-            } else {
-                return datos
-            }
-        }
+    }
 
 
     var btn = document.getElementById('agregar');

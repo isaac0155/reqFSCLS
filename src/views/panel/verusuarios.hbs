@@ -81,7 +81,7 @@
         // Convertir los datos filtrados a JSON y mostrarlos en la consola
         var jsonDatos = JSON.stringify(datosFiltrados, null, 2); // Indenta el JSON para una mejor legibilidad
         var datos = eliminarAtributoDeDatos(datosFiltrados, elimi);
-        
+
         var $table = $('#' + tableId);
         var datosOriginales = $table.bootstrapTable('getData', { unfiltered: true });
         var encabezados = [];
@@ -107,18 +107,18 @@
         XLSX.writeFile(libro, nombreArchivo ? nombreArchivo + '.xlsx' : 'export.xlsx');
     }
     function cambiarNombresDeAtributos(datos, mapeoNombres) {
-            // Cambiar los nombres de los atributos según el mapeo proporcionado
-            return datos.map(objeto => {
-                var nuevoObjeto = {};
-                Object.keys(objeto).forEach(claveAntigua => {
-                    var claveNueva = mapeoNombres[claveAntigua] || claveAntigua;
-                    nuevoObjeto[claveNueva] = objeto[claveAntigua];
-                });
-                return nuevoObjeto;
+        // Cambiar los nombres de los atributos según el mapeo proporcionado
+        return datos.map(objeto => {
+            var nuevoObjeto = {};
+            Object.keys(objeto).forEach(claveAntigua => {
+                var claveNueva = mapeoNombres[claveAntigua] || claveAntigua;
+                nuevoObjeto[claveNueva] = objeto[claveAntigua];
             });
-        }
+            return nuevoObjeto;
+        });
+    }
     function eliminarAtributoDeDatos(datos, nombreAtributo) {
-        if(nombreAtributo){
+        if (nombreAtributo) {
             // Filtrar los datos, eliminando el atributo especificado
             return datos.map(objeto => {
                 var nuevoObjeto = {};
@@ -129,10 +129,10 @@
                 });
                 return nuevoObjeto;
             });
-        }else{
+        } else {
             return datos
         }
-        }
+    }
 
 
 
