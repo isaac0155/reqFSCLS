@@ -7,10 +7,12 @@ const session = require('express-session');
 const MySQLStore = require('express-mysql-session');
 const {database} = require('./keys');
 const passport = require('passport');
+const schedule = require('node-schedule');
 import { Server as WebSocketServer } from "socket.io";
 const http = require('http')
 const device = require('express-device')
 import {PORT} from './config.js'
+const eliminarArchivosAntiguos = require('./lib/config/deleteFiles')
 
 //inicializaciones
 const app = express();
@@ -70,6 +72,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(require('./routes/autentication'));
 app.use('/links', require('./routes/links')(io));
 app.use(require('./routes/index'));
+
+//revision de datos y archivos
+schedule.scheduleJob('0 */14 * * *', function () {
+    console.log("eliminar archivos cada 28 días");
+    eliminarArchivosAntiguos();
+});
 
 //iniciar servidor
 Server.listen(PORT, () =>{
