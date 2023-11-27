@@ -43,8 +43,12 @@
                 </tr>
             </table>
             {{#if res.archivo}}
-            <div class="alert alert-success" role="alert">
-                <a href="/links/download/{{res.nombre}}">Click aqui para descargar {{res.archivo}} archivos adjuntos</a>
+            <div class="alert alert-success" id="vigente" role="alert">
+                <a href="/links/download/{{res.nombre}}">Click aqui para descargar {{res.archivo}} archivos adjuntos</a><br>
+                Los archivos seran eliminados 28 días desde su creación.
+            </div>
+            <div class="alert alert-warning" style="display: none;" id="vencido" role="alert">
+                Los {{res.archivo}} archivos fueron eliminados pasado 28 días de creados.
             </div>
             {{else}}
             <div class="alert alert-warning" role="alert">
@@ -99,8 +103,38 @@
         
 </div>
 <script>
+   const fechaString = '{{res.fecha}}';
+    //console.log(fechaString)
+
+    // Convertir la cadena de fecha a un objeto Date, solo para la fecha
+    const fechaParte = fechaString.split(' - ')[0];
+    const fechaObjeto = new Date(fechaParte);
+
+    // Ajustar la fechaObjeto para que no tenga en cuenta la hora
+    fechaObjeto.setHours(0, 0, 0, 0);
+
+    // Obtener la fecha actual sin considerar la hora
+    const fechaActual = new Date();
+    fechaActual.setHours(0, 0, 0, 0);
+
+    // Calcular la diferencia en días
+    const diferenciaTiempo = fechaActual - fechaObjeto;
+    const diferenciaDias = diferenciaTiempo / (1000 * 60 * 60 * 24);
+
+    // Verificar si han pasado más de 28 días
+    const hanPasado28Dias = diferenciaDias > 28;
+    var ar = {{res.archivo}}
+    console.log(ar) 
+    if (diferenciaDias > 28 && ar > 0) {
+        document.getElementById('vigente').style.display = 'none';
+        document.getElementById('vencido').style.display = '';
+    }
+
+   // console.log(diferenciaDias); // Muestra la diferencia en días
+    //console.log(hanPasado28Dias); // true si han pasado más de 28 días, false en caso contrario
+
     socket.on('server:progress{{res.nombre}}', (valor, avance) => {
-        console.log(valor,avance)
+        //console.log(valor,avance)
         //location.reload();
         var progress = document.getElementById('progress')
         var detalle = document.getElementById('texto')
