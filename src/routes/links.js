@@ -47,9 +47,11 @@ var ret = (io) => {
         });
         socket.on('cliente:solicitudRRFF', async (json, idPersona) => {
             var nuevoReqBody = await formatJson(json)
+            var ad = await pool.query('select ad from persona where idPersona = ' + idPersona)
             var id = shortid.generate();
+            ad = ad[0].ad
             await controlRRFF( json, nuevoReqBody, idPersona, id, socket, io )
-            
+            io.emit('user:grafica', ad);
         });
     });
     /** */
@@ -321,21 +323,27 @@ var ret = (io) => {
             ORDER BY
                 a.Fecha;
         `)
-        console.log(datosRecibidos)
-        const datosAjustados = datosRecibidos.map(d => ({
-            Fecha: d.Fecha.toISOString().split('T')[0],
-            NumeroDeFilas: d.NumeroDeFilas,
-            PersonasConConteo: d.PersonasConConteo
-        }));
-        // Encontrar fechas de inicio y fin
-        const { fechaInicio, fechaFin } = encontrarFechasExtremas(datosAjustados);
-        // Obtener datos completos
-        const datosCompletos = completarDatosFaltantes(datosAjustados, fechaInicio, fechaFin);
-        //console.log(datosCompletos)
+        var datosCompletos = []
         var users = await pool.query('select * from persona')
         var fechas = await pool.query('SELECT MIN(fecha) AS inicio, MAX(fecha) AS fin FROM historialconsulta;')
-        //console.log(fechas, fechas[0].inicio.toISOString().split('T')[0], fechas[0].fin )
-        res.render('links/grafica', { datos: datosCompletos, users, inicio: fechas[0].inicio.toISOString().split('T')[0], fin: fechas[0].fin.toISOString().split('T')[0] });
+        if(datosRecibidos.length > 0){
+
+            const datosAjustados = datosRecibidos.map(d => ({
+                Fecha: d.Fecha.toISOString().split('T')[0],
+                NumeroDeFilas: d.NumeroDeFilas,
+                PersonasConConteo: d.PersonasConConteo
+            }));
+            // Encontrar fechas de inicio y fin
+            const { fechaInicio, fechaFin } = encontrarFechasExtremas(datosAjustados);
+            // Obtener datos completos
+            datosCompletos = completarDatosFaltantes(datosAjustados, fechaInicio, fechaFin);
+            //console.log(datosCompletos)
+            //console.log(fechas, fechas[0].inicio.toISOString().split('T')[0], fechas[0].fin )
+            res.render('links/grafica', { datos: datosCompletos, users, inicio: fechas[0].inicio.toISOString().split('T')[0], fin: fechas[0].fin.toISOString().split('T')[0] });
+        }else{
+            res.render('links/grafica', { datos: [], users, inicio: fechas[0].inicio.toISOString().split('T')[0], fin: fechas[0].fin.toISOString().split('T')[0] });
+
+        }
     });
     function encontrarFechasExtremas(datos) {
         let fechas = datos.map(item => new Date(item.Fecha));

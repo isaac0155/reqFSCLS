@@ -90,7 +90,7 @@
     input.addEventListener('input', () => {
         const value = input.value;
         if (value.length > 4) {
-            socket.emit('cliente:verifUser', value);
+            socket.emit('cliente:verifUser', value.trim());
         } else {
             invalid.innerHTML = "Crea un AD de 5 o más caracteres.";
             input.className = 'form-control is-invalid';
