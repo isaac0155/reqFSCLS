@@ -13,6 +13,7 @@ const http = require('http')
 const device = require('express-device')
 import {PORT} from './config.js'
 const eliminarArchivosAntiguos = require('./lib/config/deleteFiles')
+const { backupDatabase, restoreDatabase, prueba } = require('./lib/config/backupMySQL')
 
 //inicializaciones
 const app = express();
@@ -49,7 +50,7 @@ app.use(session({
 
 app.use(device.capture());
 app.use(flash());
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(passport.initialize());
@@ -74,11 +75,14 @@ app.use('/links', require('./routes/links')(io));
 app.use(require('./routes/index'));
 
 //revision de datos y archivos
-schedule.scheduleJob('0 */14 * * *', function () {
-    console.log("eliminar archivos cada 28 días");
+schedule.scheduleJob('0 4 * * *', function () {
+    console.log("Revisar archivos pasados");
     eliminarArchivosAntiguos();
+    console.log("Backup de Base de Datos");
+    backupDatabase()
 });
 
+//backupDatabase()
 //iniciar servidor
 Server.listen(PORT, () =>{
     console.log('Servidor en el puerto', PORT);

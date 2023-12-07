@@ -10,7 +10,7 @@ const { isLoggedIn } = require('../lib/auth')
 const { isAdmin } = require('../lib/auth')
 const { formatJson, controlRRFF } = require('./funciones/controlRRFF')
 const { convertirFecha } = require('./funciones/format');
-const { Console } = require('console');
+const { restoreDatabase } = require('../lib/config/backupMySQL')
 
 var ret = (io) => {
     io.on("connection", (socket) => {
@@ -344,6 +344,25 @@ var ret = (io) => {
             res.render('links/grafica', { datos: [], users, inicio: fechas[0].inicio.toISOString().split('T')[0], fin: fechas[0].fin.toISOString().split('T')[0] });
 
         }
+    });
+    router.get('/panel/sistema/restaurar', isAdmin, async (req, res) => {
+        let directorio = path.join(__dirname, '..', '/lib/backup');
+        let archivos
+        try {
+            archivos = fs.readdirSync(directorio);
+        } catch (err) {
+            console.error('Error al leer el directorio:', err);
+        }
+        var completo=[]
+        archivos.forEach((element)=>{
+            completo.push({ archivo: element.split('.sql.en')[0]})
+        })
+        console.log(completo)
+        res.render('panel/backup', {completo})
+    });
+    router.post('/panel/sistema/restaurar', isAdmin, async (req, res) => {
+        //await restoreDatabase(path.join(__dirname, '..', '/lib/backup/backup.sql.enc'))
+        res.redirect('/links/panel/sistema/restaurar')
     });
     function encontrarFechasExtremas(datos) {
         let fechas = datos.map(item => new Date(item.Fecha));

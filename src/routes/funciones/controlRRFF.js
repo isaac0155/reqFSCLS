@@ -82,6 +82,10 @@ const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io) => {
 `
         }
     }
+    nuevoTexto += `
+----------------------------------------------------------------------------------------------
+
+`
     io.emit('server:progressRF_' + id, 99, 'Historial finalizado')
     await pool.query(`
             update historialconsulta set 
