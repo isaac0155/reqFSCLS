@@ -43,13 +43,14 @@ const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io) => {
     var archivos = respo.datos1.archivos > 0 ? respo.datos1.archivos : false
     //console.log('archivos', archivos);
     nuevoTexto = nuevoTexto.trim()
+    const resultado = nuevoTexto.match(/\d+\. TRAFICO:\n([\s\S]*?)(?:\n\n|\d+\.\s+\w+:|$)/);
     var ang
+    ang = extraerNumeros(resultado[1].trim())
     if ('flujodatos' in json) {
-        const resultado = nuevoTexto.match(/\d+\. TRAFICO:\n([\s\S]*?)(?:\n\n|\d+\.\s+\w+:|$)/);
 
         if (resultado && resultado[1]) {
             io.emit('server:progressRF_' + id, 65, 'Enviando datos a Netezza')
-            ang = extraerNumeros(resultado[1].trim())
+            
             var xls = await resultadosSys(respo.datos1.nombre, json.fechaIni, json.fechaFin, ang, io, id);
             //console.log('xls',xls);
             if (xls > 0) {

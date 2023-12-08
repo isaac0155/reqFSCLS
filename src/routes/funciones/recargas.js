@@ -5,6 +5,7 @@ const { netezzaConnection } = require('../../dataBaseNetezza');
 const recargas = async (fechaIni, fechaFin, datos, io, id) => {
     let str = datos;
     let array = str.split(',').map(s => s.trim().replace(/'/g, ''));
+    console.log(array)
     var i = 0
     for (const element of array) {
         
