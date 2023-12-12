@@ -355,9 +355,24 @@ var ret = (io) => {
         }
         var completo=[]
         archivos.forEach((element)=>{
-            completo.push({ archivo: element.split('.sql.en')[0]})
+            if(element != '.gitignore'){
+                completo.push({ archivo: element.split('.sql.en')[0]})
+            }
         })
-        console.log(completo)
+        //console.log(completo)
+        function convertirFecha(fecha) {
+            let partes = fecha.split('-');
+            return `${partes[2]}-${partes[1]}-${partes[0]}`;
+        }
+
+        // Ordenar por fecha más reciente a más antigua
+        completo.sort((a, b) => {
+            let fechaA = new Date(convertirFecha(a.archivo));
+            let fechaB = new Date(convertirFecha(b.archivo));
+            return fechaB - fechaA;
+        });
+
+        //console.log(completo);
         res.render('panel/backup', {completo})
     });
     router.post('/panel/sistema/restaurar', isAdmin, async (req, res) => {

@@ -36,6 +36,15 @@
 </div>
 <script>
     function enviar(archivo){
-        
+        if (confirm("SE HARÁ UNA RESTAURACIÓN DEL SISTEM A: "+archivo+" ¿Estás de acuerdo con realizar esta acción?")) {
+            // El usuario hizo clic en "Aceptar"
+            console.log("El usuario está de acuerdo.", archivo);
+            // Coloca aquí el código para la acción que debe realizarse
+        } else {
+            // El usuario hizo clic en "Cancelar"
+            console.log("El usuario no está de acuerdo.", archivo);
+            // Coloca aquí el código para cuando el usuario no esté de acuerdo
+        }
+
     }
 </script>

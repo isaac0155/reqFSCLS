@@ -44,8 +44,12 @@ const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io) => {
     //console.log('archivos', archivos);
     nuevoTexto = nuevoTexto.trim()
     const resultado = nuevoTexto.match(/\d+\. TRAFICO:\n([\s\S]*?)(?:\n\n|\d+\.\s+\w+:|$)/);
-    var ang
-    ang = extraerNumeros(resultado[1].trim())
+    var ang = ''
+    try{
+        ang = extraerNumeros(resultado[1].trim())
+    }catch{
+        ang = ''
+    }
     if ('flujodatos' in json) {
 
         if (resultado && resultado[1]) {
