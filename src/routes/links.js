@@ -284,12 +284,12 @@ var ret = (io) => {
                 return acc;
             }, {});
 
-            console.log(queryParams);
+            //console.log(queryParams);
             if (queryParams.idPersona > 0) {
 
                 where = `where a.idPersona = ${queryParams.idPersona} and a.Fecha >= '${queryParams.fechaIni}' and  a.Fecha <= '${queryParams.fechaFin}'`
             }
-            console.log(where)
+            //console.log(where)
         }
 
         // Ejemplo de datos recibidos
@@ -391,7 +391,7 @@ var ret = (io) => {
     router.post('/panel/backup', isAdmin, async (req, res) => {
         console.log(req.body)
         await backupDatabase(true)
-        await restoreDatabase(path.join(__dirname, '..', '/lib/backup/' + req.body.nombre +'.sql.enc'))
+        await restoreDatabase(path.join(__dirname, '..', '/lib/backup/' + req.body.nombre + '.sql.enc'))
         req.flash('success', 'Base de Datos Restaurada a fecha ' + req.body.nombre)
         res.redirect('/')
     });
