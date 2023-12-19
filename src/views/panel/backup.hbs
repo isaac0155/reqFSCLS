@@ -1,14 +1,14 @@
 <div class="container p-4 bg-white">
-    <div class="text-center mb-3">
-        <h3>Panel de Control - {{user.ad}}</h3>
+    <div class="text-center m-5">
+        <h3>Restaurar Base de Datos del Sistema</h3>
+        <p>El sistema reliza copias de seguridad automatizadas.</p>
     </div>
     <div class="container p-4 bg-white">
         <div class="row">
             <div class="col-md-5 mx-auto">
-                
-                <table class="table table-hover table-sm">
+                <table class="table table-hover table-sm text-center">
                     <thead>
-                        <tr>
+                        <tr >
                             <th scope="col">Fecha de Backup</th>
                             <th scope="col">Estado</th>
                             <th scope="col">Accion</th>
@@ -22,7 +22,10 @@
                             </td>
                             <td class="text-success">Encriptado</td>
                             <td>
-                                <button class="btn btn-warning btn-sm" style="margin-top: 0px;" onclick="enviar('{{archivo}}')">Restaurar esta copia</button>
+                                <form action="/links/panel/backup" method="post" id="miFormulario">
+                                    <input type="text" value="{{archivo}}" style="display: none;" name="nombre" id="">
+                                    <button type="submit" class="btn btn-warning btn-sm" style="margin-top: 0px;" onclick="enviar('{{archivo}}')">Restaurar esta copia</button>
+                                </form>
                             </td>
                         </tr>
                         {{/each}}
@@ -35,16 +38,12 @@
     </div>
 </div>
 <script>
-    function enviar(archivo){
-        if (confirm("SE HARÁ UNA RESTAURACIÓN DEL SISTEM A: "+archivo+" ¿Estás de acuerdo con realizar esta acción?")) {
-            // El usuario hizo clic en "Aceptar"
-            console.log("El usuario está de acuerdo.", archivo);
-            // Coloca aquí el código para la acción que debe realizarse
-        } else {
-            // El usuario hizo clic en "Cancelar"
-            console.log("El usuario no está de acuerdo.", archivo);
-            // Coloca aquí el código para cuando el usuario no esté de acuerdo
+    document.getElementById('miFormulario').addEventListener('submit', function (event) {
+        var confirmacion = confirm("¿Estás seguro de que deseas RESTARURAR EL ESISTEMA? Esta Accion no puede deshacerse, puede afectar multiples funcionalidades y registros del Sistema.");
+        if (!confirmacion) {
+            // Si el usuario elige "Cancelar", se evita el envío del formulario
+            event.preventDefault();
         }
+    });
 
-    }
 </script>

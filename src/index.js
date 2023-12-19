@@ -79,7 +79,7 @@ schedule.scheduleJob('0 4 * * *', function () {
     console.log("Revisar archivos pasados");
     eliminarArchivosAntiguos();
     console.log("Backup de Base de Datos");
-    backupDatabase()
+    backupDatabase(false)
 });
 
 //backupDatabase()

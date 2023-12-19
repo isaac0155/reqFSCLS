@@ -10,7 +10,8 @@ const { isLoggedIn } = require('../lib/auth')
 const { isAdmin } = require('../lib/auth')
 const { formatJson, controlRRFF } = require('./funciones/controlRRFF')
 const { convertirFecha } = require('./funciones/format');
-const { restoreDatabase } = require('../lib/config/backupMySQL')
+const upload = require('../lib/storage')
+const { restoreDatabase, backupDatabase } = require('../lib/config/backupMySQL')
 
 var ret = (io) => {
     io.on("connection", (socket) => {
@@ -50,7 +51,7 @@ var ret = (io) => {
             var ad = await pool.query('select ad from persona where idPersona = ' + idPersona)
             var id = shortid.generate();
             ad = ad[0].ad
-            await controlRRFF( json, nuevoReqBody, idPersona, id, socket, io )
+            await controlRRFF(json, nuevoReqBody, idPersona, id, socket, io)
             io.emit('user:grafica', ad);
         });
     });
@@ -183,7 +184,7 @@ var ret = (io) => {
         archive.pipe(output);  // Esto guardará el archivo en el servidor
         res.on('finish', function () {
             fs.unlink(outputFilePath, (err) => {
-                if (err) 
+                if (err)
                     console.error('Error al eliminar el archivo:', err)
             });
         });
@@ -276,15 +277,15 @@ var ret = (io) => {
     router.get('/grafica/:queryString', isAdmin, async (req, res) => {
         var { queryString } = req.params
         var where = ''
-        if(queryString != 'all'){
+        if (queryString != 'all') {
             const queryParams = queryString.split('&').reduce((acc, current) => {
                 const [key, value] = current.split('=');
                 acc[decodeURIComponent(key)] = decodeURIComponent(value);
                 return acc;
             }, {});
-    
+
             console.log(queryParams);
-            if(queryParams.idPersona > 0){
+            if (queryParams.idPersona > 0) {
 
                 where = `where a.idPersona = ${queryParams.idPersona} and a.Fecha >= '${queryParams.fechaIni}' and  a.Fecha <= '${queryParams.fechaFin}'`
             }
@@ -326,7 +327,7 @@ var ret = (io) => {
         var datosCompletos = []
         var users = await pool.query('select * from persona')
         var fechas = await pool.query('SELECT MIN(fecha) AS inicio, MAX(fecha) AS fin FROM historialconsulta;')
-        if(datosRecibidos.length > 0){
+        if (datosRecibidos.length > 0) {
 
             const datosAjustados = datosRecibidos.map(d => ({
                 Fecha: d.Fecha.toISOString().split('T')[0],
@@ -340,7 +341,7 @@ var ret = (io) => {
             //console.log(datosCompletos)
             //console.log(fechas, fechas[0].inicio.toISOString().split('T')[0], fechas[0].fin )
             res.render('links/grafica', { datos: datosCompletos, users, inicio: fechas[0].inicio.toISOString().split('T')[0], fin: fechas[0].fin.toISOString().split('T')[0] });
-        }else{
+        } else {
             res.render('links/grafica', { datos: [], users, inicio: fechas[0].inicio.toISOString().split('T')[0], fin: fechas[0].fin.toISOString().split('T')[0] });
 
         }
@@ -353,10 +354,10 @@ var ret = (io) => {
         } catch (err) {
             console.error('Error al leer el directorio:', err);
         }
-        var completo=[]
-        archivos.forEach((element)=>{
-            if(element != '.gitignore'){
-                completo.push({ archivo: element.split('.sql.en')[0]})
+        var completo = []
+        archivos.forEach((element) => {
+            if (element != '.gitignore') {
+                completo.push({ archivo: element.split('.sql.en')[0] })
             }
         })
         //console.log(completo)
@@ -373,12 +374,29 @@ var ret = (io) => {
         });
 
         //console.log(completo);
-        res.render('panel/backup', {completo})
+        res.render('panel/backup', { completo })
     });
     router.post('/panel/sistema/restaurar', isAdmin, async (req, res) => {
         //await restoreDatabase(path.join(__dirname, '..', '/lib/backup/backup.sql.enc'))
         res.redirect('/links/panel/sistema/restaurar')
     });
+    router.post('/profile/modify/img', upload.single('image'), isLoggedIn, async (req, res) => {
+        if (req.file) {
+            var foto = req.file.filename
+            await pool.query('update persona set foto = "' + foto + '" where idPersona = ' + req.user.idPersona)
+            req.flash('success', 'Foto de Perfil Modificado')
+        }
+        res.redirect('/links/profile/admin/modify')
+    });
+    router.post('/panel/backup', isAdmin, async (req, res) => {
+        console.log(req.body)
+        await backupDatabase(true)
+        await restoreDatabase(path.join(__dirname, '..', '/lib/backup/' + req.body.nombre +'.sql.enc'))
+        req.flash('success', 'Base de Datos Restaurada a fecha ' + req.body.nombre)
+        res.redirect('/')
+    });
+
+
     function encontrarFechasExtremas(datos) {
         let fechas = datos.map(item => new Date(item.Fecha));
         let fechaInicio = new Date(Math.min(...fechas));

@@ -15,14 +15,14 @@ function eliminarArchivo(rutaArchivo) {
         console.log(`Archivo eliminado: ${rutaArchivo}`);
     });
 }
-const backupDatabase = () => {
+const backupDatabase = (manual) => {
     let fechaActual = new Date();
     let dia = fechaActual.getDate();
     let mes = fechaActual.getMonth() + 1; // getMonth() devuelve un índice basado en cero, por lo que se suma 1
     let año = fechaActual.getFullYear();
     // Formato de fecha y hora: DD-MM-AAAA
-    let fechaFormateada = `${dia}-${mes}-${año}`;
-
+    let fechaFormateada = manual ? new Date().toLocaleString().replace(/[\/\\:]/g, '-').replace(', ', '--') : `${dia}-${mes}-${año}`
+    console.log(fechaFormateada)
     const backupPath = path.join(__dirname, '..', `/backup/${fechaFormateada}.sql`);
     exec(`${data} > ${backupPath}` , (error, stdout, stderr) => {
         if (error) {

@@ -41,7 +41,12 @@
                         <li class="nav-item dropdown text-white">
                             <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                <img src="/img/user1.png"  style="margin-right: -5px; margin-top:-8px" alt="" width="18" height="18">  {{user.ad}}
+                                {{#if user.foto}}
+                                <img src="/img/profiles/{{user.foto}}" class="rounded-circle"  style="margin-left: -5px; margin-top:-3px" alt="" width="18" height="18">
+                                {{else}}  
+                                <img src="https://i.ibb.co/sy5YrsX/user.png" class="rounded-circle"  style="margin-left: -5px; margin-top:-3px" alt="" width="18" height="18">
+                                {{/if}}
+                                {{user.ad}}
                             </a>
                             <ul class="dropdown-menu">
                                 <li>

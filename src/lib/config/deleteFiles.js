@@ -1,13 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 const directorio = path.join(__dirname, '../../public/img/imgenCliente/');
+const backup = path.join(__dirname, '../../lib/backup/');
 const archivoExcluido = '.gitignore'
 
 const eliminarArchivosAntiguos =  () => {
     const milisegundosPorDia = 24 * 60 * 60 * 1000; // Milisegundos en un día
     const limite = new Date(Date.now() - 28 * milisegundosPorDia); // Fecha límite (28 días atrás)
+    borrar(directorio, limite)
+    borrar(backup, limite)
+}
 
-    fs.readdir(directorio, (err, archivos) => {
+function borrar(dir, limite){
+    fs.readdir(dir, (err, archivos) => {
         if (err) {
             console.error('Error al leer el directorio:', err);
             return;
@@ -39,7 +44,6 @@ const eliminarArchivosAntiguos =  () => {
         });
     });
 }
-
 
 
 module.exports = eliminarArchivosAntiguos;

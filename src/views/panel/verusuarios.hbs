@@ -38,7 +38,14 @@
         <tbody>
             {{#each persona}}
             <tr>
-                <td>{{ad}}</td>
+                <td>
+                    {{#if foto}}
+                    <img src="/img/profiles/{{foto}}" class="rounded-circle" alt="" width="25" height="25"> 
+                    {{else}}
+                    <img src="https://i.ibb.co/sy5YrsX/user.png" class="rounded-circle" alt="" width="25" height="25"> 
+                    {{/if}}
+                    {{ad}}
+                </td>
                 <td>{{rrff}}</td>
                 <td>{{rol}}</td>
                 {{#if activo}}
