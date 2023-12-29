@@ -24,7 +24,7 @@ function borrar(dir, limite){
                 return;
             }
 
-            const rutaCompleta = path.join(directorio, archivo);
+            const rutaCompleta = path.join(dir, archivo);
             fs.stat(rutaCompleta, (err, stats) => {
                 if (err) {
                     console.error('Error al obtener información del archivo:', err);
