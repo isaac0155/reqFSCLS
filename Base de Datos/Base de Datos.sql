@@ -1,3 +1,5 @@
+create database rrff;
+use rrff;
 create table historialconsulta
 (
     idHistorialConsulta bigint auto_increment
@@ -11,7 +13,8 @@ create table historialconsulta
     resultado           text     null,
     archivo             int      null,
     tipoBusqueda        text     null,
-    pm                  text     null
+    pm                  text     null,
+    body                text     null
 );
 
 create table rol
@@ -29,6 +32,7 @@ create table persona
     password  text   null,
     idRol     bigint null,
     activo    int    null,
+    foto      text   null,
     constraint persona_ibfk_1
         foreign key (idRol) references rol (idRol)
 );
