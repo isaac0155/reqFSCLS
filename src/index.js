@@ -82,8 +82,16 @@ schedule.scheduleJob('0 4 * * *', function () {
     backupDatabase(false)
 });
 
-//backupDatabase()
-//iniciar servidor
-Server.listen(PORT, () =>{
-    console.log('Servidor en el puerto', PORT);
-});
+const dbConfig = require('./dataBaseOracle');
+
+(async () => {
+    try {
+        await dbConfig.initialize();
+        // Iniciar servidor
+        Server.listen(PORT, () => {
+            console.log('Servidor en el puerto', PORT);
+        });
+    } catch (err) {
+        console.error('Error al inicializar el pool de conexiones:', err);
+    }
+})();

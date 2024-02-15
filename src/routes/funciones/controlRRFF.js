@@ -1,11 +1,11 @@
+// Importaciones de módulos y archivos necesarios para la funcionalidad
 const pool = require('../../database');
 const filtradoQuery = require('./mits');
-const resultadosSys = require('./system')
+const resultadosSys = require('./system');
 const { extraerNumeros } = require('./format');
-const recargas = require('./recargas')
+const recargas = require('./recargas');
 
-
-
+// Función para formatear el JSON eliminando prefijos específicos y organizando los datos
 const formatJson = (json) => {
     const { opcionSeleccionada, ...otrosCampos } = json;
     let campo = [];
@@ -15,15 +15,19 @@ const formatJson = (json) => {
             delete otrosCampos[key];
         }
     }
-    return { opcionSeleccionada, campo, ...otrosCampos }
+    return { opcionSeleccionada, campo, ...otrosCampos };
 }
 
+// Función principal para el control de solicitudes RF, incluyendo inserciones en la base de datos y emisiones de eventos
 const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io) => {
+    // Filtro de claves presentes en el JSON para determinar los datos solicitados
     const keys_to_check = ["datostitular", "flujollamadas", "flujosms", "radiobases", "imei", "datostitularref", "imeiref", "flujodatos", "recargas"];
     const keys_present = keys_to_check.filter(key => key in json);
     const result_string = keys_present.join(", ");
+
+    // Inserción en la tabla de historial de consulta con los datos recopilados
     await pool.query(`
-            insert into historialconsulta set 
+            INSERT INTO historialconsulta SET 
             idPersona = ${idPersona}, 
             fecha = '${json.fecha}', 
             rangoBusqueda = '${json.fechaIni} / ${json.fechaFin}', 
@@ -31,80 +35,74 @@ const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io) => {
             nombre = 'RF_${id}', 
             tipoBusqueda='${json.opcionSeleccionada}', 
             pm = '${json.pm}',
-            body = '${JSON.stringify(nuevoReqBody)}';`)
+            body = '${JSON.stringify(nuevoReqBody)}';`);
 
+    // Notificación al cliente sobre la solicitud en proceso
     socket.emit('server:solicitudRRFF', id);
-    io.emit('server:progressRF_' + id, 5, 'Historial creado')
+    io.emit('server:progressRF_' + id, 5, 'Historial creado');
 
-    var respo = await filtradoQuery(nuevoReqBody, id, io)
-    var response = respo.txt.trim() || ''
+    // Procesamiento del filtro de consulta y manejo de resultados
+    var respo = await filtradoQuery(nuevoReqBody, id, io);
+    var response = respo.txt.trim() || '';
     const posicion = response.indexOf("--------------");
     var nuevoTexto = posicion !== -1 ? response.substring(0, posicion) : response;
-    var archivos = respo.datos1.archivos > 0 ? respo.datos1.archivos : false
-    //console.log('archivos', archivos);
-    nuevoTexto = nuevoTexto.trim()
+    var archivos = respo.datos1.archivos > 0 ? respo.datos1.archivos : false;
+    nuevoTexto = nuevoTexto.trim();
     const resultado = nuevoTexto.match(/\d+\. TRAFICO:\n([\s\S]*?)(?:\n\n|\d+\.\s+\w+:|$)/);
-    var ang = ''
-    try{
-        ang = extraerNumeros(resultado[1].trim())
-    }catch{
-        ang = ''
-    }
-    if ('flujodatos' in json) {
+    var ang = '';
 
+    try {
+        ang = extraerNumeros(resultado[1].trim());
+    } catch {
+        ang = '';
+    }
+
+    // Procesamiento de flujos de datos si se incluyen en la solicitud
+    if ('flujodatos' in json) {
         if (resultado && resultado[1]) {
-            io.emit('server:progressRF_' + id, 65, 'Enviando datos a Netezza')
-            
+            io.emit('server:progressRF_' + id, 65, 'Enviando datos a Netezza');
+
             var xls = await resultadosSys(respo.datos1.nombre, json.fechaIni, json.fechaFin, ang, io, id);
-            //console.log('xls',xls);
             if (xls > 0) {
-                archivos = archivos + xls;
-                nuevoTexto += `
--TRAFICO DE DATOS ADJUNTO.
-                        `
+                archivos += xls;
+                nuevoTexto += '\n-TRAFICO DE DATOS ADJUNTO.\n';
             } else {
-                nuevoTexto += `
--NO HAY TRAFICO DE DATOS.
-                        `
+                nuevoTexto += '\n-NO HAY TRAFICO DE DATOS.\n';
             }
         } else {
-            //console.log('No se encontró el patrón');
-            nuevoTexto += `
--NO HAY TRAFICO DE DATOS.
-                `
+            nuevoTexto += '\n-NO HAY TRAFICO DE DATOS.\n';
         }
     }
-    if ('recargas' in json) {
-        io.emit('server:progressRF_' + id, 90, 'Buscando detalle de Recargas Credito')
-        var rec = await recargas(json.fechaIni, json.fechaFin, ang, io, id)
-        if (rec) {
-            archivos = archivos + rec
-            nuevoTexto += `
--TRAFICO DE RECARGAS Y CREDITO ADJUNTO.`
-        } else {
-            nuevoTexto += `
--NO HAY TRAFICO DE RECARGAS.
-`
-        }
-    }
-    nuevoTexto += `
----------------------------------------------------------------------------------------------------------
 
-`
-    io.emit('server:progressRF_' + id, 99, 'Historial finalizado')
+    // Procesamiento de recargas si se incluyen en la solicitud
+    if ('recargas' in json) {
+        io.emit('server:progressRF_' + id, 90, 'Buscando detalle de Recargas Credito');
+        var rec = await recargas(json.fechaIni, json.fechaFin, ang, io, id);
+        if (rec) {
+            archivos += rec;
+            nuevoTexto += '\n-TRAFICO DE RECARGAS Y CREDITO ADJUNTO.\n';
+        } else {
+            nuevoTexto += '\n-NO HAY TRAFICO DE RECARGAS.\n';
+        }
+    }
+
+    // Finalización del texto y actualización del historial de consulta con los resultados finales
+    nuevoTexto += '\n---------------------------------------------------------------------------------------------------------\n';
+    io.emit('server:progressRF_' + id, 99, 'Historial finalizado');
     await pool.query(`
-            update historialconsulta set 
+            UPDATE historialconsulta SET 
                 entradaBusqueda = '${respo.datos1.busqueda}', 
                 resultado = '${nuevoTexto.trim()}', 
                 archivo = ${archivos}, 
                 body = null 
-                where nombre = 'RF_${id}';
-            `)
-    io.emit('server:progressRF_' + id, 100, 'Tarea Finalizada')
+                WHERE nombre = 'RF_${id}';
+            `);
+    io.emit('server:progressRF_' + id, 100, 'Tarea Finalizada');
     var instruccion = 'server:solicitudRRFFRF_' + id;
     io.emit(instruccion);
 }
 
+// Exportación de las funciones para su uso en otros módulos
 module.exports = {
     controlRRFF,
     formatJson

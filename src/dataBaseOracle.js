@@ -1,30 +1,24 @@
 const oracledb = require('oracledb');
 
-// Configuración de la base de datos 1
-var config1 = {
+// Configuración del pool de conexiones
+var poolConfig = {
     user: 'APP_RFISCAL',
     password: 'R%f1sc4l23',
-    connectString: '10.49.4.20:1521/mits' // Asegúrate de que esta propiedad esté configurada correctamente.
+    connectString: '10.49.4.20:1521/mits',
+    poolMin: 1,
+    poolMax: 50,
+    poolIncrement: 5,
+    poolTimeout: 21600
 };
 
-// Función para crear un pool de conexión
-async function createPool(config) {
+// Inicializar el pool de conexiones
+async function initialize() {
     try {
-        try {
-            var db = await oracledb.getConnection(config);
-            console.log('Base de datos conectada Oracle ' + config.connectString.split('/')[1]);
-            return db;
-        } catch (error) {
-            console.error('oracle Error al crear el pool de conexión: ', error);
-            throw error;
-        }
-    } catch{}
+        await oracledb.createPool(poolConfig);
+        console.log('Pool de conexiones creado Oracle');
+    } catch (error) {
+        console.error('Error al crear el pool de conexiones:', error);
+    }
 }
 
-// Crear pools para ambas bases de datos
-var pool1 = createPool(config1);
-//console.log("pool1")
-//console.log(pool1)
-module.exports = {
-    pool1
-};
+module.exports.initialize = initialize;
