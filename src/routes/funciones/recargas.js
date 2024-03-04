@@ -28,7 +28,7 @@ const recargas = async (fechaIni, fechaFin, datos, io, id) => {
             order by name_a,fecha_llamada_fin, FECHA_LLAMADA;
             `;
     
-            console.log('Datos enviados e neteza');
+            console.log('Datos enviados e neteza', query);
             io.emit('server:progressRF_' + id, 95, 'Esperando a Netezza Recargas y Credito')
             const result = await connection.query(query);
             if (result.count == 0) {

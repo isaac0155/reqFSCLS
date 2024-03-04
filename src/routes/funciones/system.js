@@ -10,7 +10,7 @@ const resultadosSys = async  (name, fechaIni, fechaFin, datos, io, id) => {
         const query = `
         SELECT A.FECHA_INICIO_LLAMADA, A.FECHA_FIN_LLAMADA, A.nro_telefono, A.NRO_TELEFONO_DESTINO,
         A.END_VALUE AS BYTES_NAVEGADOS, A.value BYTES_FACTURADOS, A.cell_id, A.imei,
-        d.DESCRIPCION_CELDA, a.g_location
+        d.DESCRIPCION_CELDA
         FROM PR_TRAFICO.MODELO.fact_trafico a, PR_CATALOGO.DIM.dim_red_acceso d
         WHERE A.service_type LIKE '%data%'
         AND A.nro_telefono IN (${datos})
