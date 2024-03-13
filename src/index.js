@@ -64,6 +64,7 @@ app.use((req, res, next) => {
     app.locals.user = req.user;
     req.device.type == 'desktop' ? app.locals.desk = true : app.locals.desk = false;
     next();
+    //req.flash('danger', 'Alerta de Error. \n Toda la Funcionalidad del sistema de RRFF se suspende hasta nuevo aviso.\n Se está trabajando en ello. Lamentamos todos los Inconvenientes')
 });
 
 //archivos publicos
