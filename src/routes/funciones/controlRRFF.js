@@ -21,7 +21,7 @@ const formatJson = (json) => {
 // Función principal para el control de solicitudes RF, incluyendo inserciones en la base de datos y emisiones de eventos
 const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io) => {
     // Filtro de claves presentes en el JSON para determinar los datos solicitados
-    const keys_to_check = ["datostitular", "flujollamadas", "flujosms", "radiobases", "imei", "datostitularref", "imeiref", "flujodatos", "recargas"];
+    const keys_to_check = ["datostitular", "referencias", "flujollamadas", "flujosms", "radiobases", "imei", "datostitularref", "imeiref", "flujodatos", "recargas"];
     const keys_present = keys_to_check.filter(key => key in json);
     const result_string = keys_present.join(", ");
 

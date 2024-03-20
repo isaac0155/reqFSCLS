@@ -2,9 +2,11 @@ const enqueueFtpTask = require('./ftp')
 
 
 const filtradoQuery = async (json, id, io) => {
+    //console.log(json)
     const { executeProcedure } = require('./oracleDbService');
     var datos = json.campo.join(',');
     var titular = 'datostitular' in json ? 'NOM+DIR' : ''
+    titular += 'referencias' in json ? '+REF':''
     var fechaIni = json.fechaIni.replace(/-/g, '')
     var fechaFin = json.fechaFin.replace(/-/g, '')
     var imei = 'imei' in json ? 'S' : ''
