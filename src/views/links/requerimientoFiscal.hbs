@@ -370,6 +370,9 @@
             } else if ((tipoSeleccionado === "telefono" || tipoSeleccionado === "imei")) {
                 inputCampo.value = valor.replace(/[^0-9]+/g, '');
             }
+            if(tipoSeleccionado === 'ci'){
+                inputCampo.value = inputCampo.value.replace(/\s+/g, '')
+            }
             actualizarBotonEnviar();
         });
 
