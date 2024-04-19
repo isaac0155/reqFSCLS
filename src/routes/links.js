@@ -51,7 +51,7 @@ var ret = (io) => {
             var ad = await pool.query('select ad from persona where idPersona = ' + idPersona)
             var id = shortid.generate();
             ad = ad[0].ad
-            await controlRRFF(json, nuevoReqBody, idPersona, id, socket, io)
+            await controlRRFF(json, nuevoReqBody, idPersona, id, socket, io, ad)
             io.emit('user:grafica', ad);
         });
     });
