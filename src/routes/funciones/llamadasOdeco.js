@@ -50,7 +50,7 @@ const resultOdeco = async (name, fechaIni, fechaFin, datos, io, id, ad) => {
 
             // Escribir el archivo XLSX (guardar en una ruta específica)
             io.emit('server:progressRF_' + id, 88, 'Excel Configurado con Llamadas Odeco')
-            const rutaCompleta = path.join(__dirname, '..', '..', 'public', 'img', 'imgenCliente', `${name}_LLAMADAS_ODECO.xlsx`);
+            const rutaCompleta = path.join(__dirname, '..', '..', 'public', 'img', 'imgenCliente', `${name}_${element}_LLAMADAS_ODECO.xlsx`);
             XLSX.writeFile(wb, rutaCompleta);
             io.emit('server:progressRF_' + id, 88, 'Excel finalizado')
             i += 1
