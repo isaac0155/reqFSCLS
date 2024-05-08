@@ -3,9 +3,8 @@ const XLSX = require('xlsx');
 const { netezzaConnectionOdeco } = require('../../dataBaseNetezza');
 
 
-const resultOdeco = async (name, fechaIni, fechaFin, datos, io, id, ad) => {
-    let str = datos;
-    let array = str.split(',').map(s => s.trim().replace(/'/g, ''));
+const resultOdeco = async (name, fechaIni, fechaFin, datos, io, id, ad, ofuscado) => {
+    let array = datos;
     console.log(array)
     var i = 0
     for (const element of array) {
@@ -39,26 +38,57 @@ const resultOdeco = async (name, fechaIni, fechaFin, datos, io, id, ad) => {
                 order by name_a,fecha_llamada_fin, FECHA_LLAMADA;
             `
             const resultOdeco = await connection.query(query);
-            const jsonData = await resultOdeco
-            const wb = XLSX.utils.book_new();
+            var jsonData = await resultOdeco;
+            var newData = [];
 
-            // Crear una hoja de trabajo con los datos transformados
-            const ws = XLSX.utils.json_to_sheet(jsonData);
+            if (jsonData.length > 0) {
+                // Realizar una copia profunda de jsonData para newData
+                newData = JSON.parse(JSON.stringify(jsonData));
 
-            // Añadir la hoja de trabajo al libro
-            XLSX.utils.book_append_sheet(wb, ws, 'Hoja1');
+                // Eliminar REQ_ID de jsonData
+                jsonData.forEach(element => {
+                    delete element.REQ_ID;
+                });
 
-            // Escribir el archivo XLSX (guardar en una ruta específica)
-            io.emit('server:progressRF_' + id, 88, 'Excel Configurado con Llamadas Odeco')
-            const rutaCompleta = path.join(__dirname, '..', '..', 'public', 'img', 'imgenCliente', `${name}_${element}_LLAMADAS_ODECO.xlsx`);
-            XLSX.writeFile(wb, rutaCompleta);
-            io.emit('server:progressRF_' + id, 88, 'Excel finalizado')
-            i += 1
+                // Aplicar ofuscación a newData
+                newData.forEach(element => {
+                    element.NAME_B = element.NAME_B ? maskLastFourChars(element.NAME_B) : null;
+                });
+
+                const wb = XLSX.utils.book_new();
+                var ws;
+
+                // Seleccionar qué datos usar basado en 'ofuscado'
+                if (ofuscado == true) {
+                    //console.log(newData[6], ofuscado);
+                    ws = XLSX.utils.json_to_sheet(newData);
+                } else {
+                    //console.log(jsonData[6], ofuscado, 'sin ofuscar');
+                    ws = XLSX.utils.json_to_sheet(jsonData);
+                }
+
+                // Añadir la hoja de trabajo al libro y guardar el archivo
+                XLSX.utils.book_append_sheet(wb, ws, 'Hoja1');
+                io.emit('server:progressRF_' + id, 88, 'Excel Configurado con Llamadas Odeco');
+                const rutaCompleta = path.join(__dirname, '..', '..', 'public', 'img', 'imgenCliente', `${name}_${element}_LLAMADAS_ODECO.xlsx`);
+                XLSX.writeFile(wb, rutaCompleta);
+                io.emit('server:progressRF_' + id, 100, 'Excel finalizado');
+
+                i += 1;  // Incrementar contador o índice según la lógica original
+            }
+
         } catch (err) {
             console.log({ error: err.message });
         }
     }
     return i
 }
-
+function maskLastFourChars(str) {
+    if (str.length <= 4) {
+        // Si el string tiene 4 caracteres o menos, reemplaza todo con asteriscos
+        return '*'.repeat(str.length);
+    }
+    // Toma todos los caracteres excepto los últimos cuatro y añade 4 asteriscos
+    return str.slice(0, -4) + '****';
+}
 module.exports = resultOdeco;

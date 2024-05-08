@@ -22,7 +22,7 @@ const formatJson = (json) => {
 // Función principal para el control de solicitudes RF, incluyendo inserciones en la base de datos y emisiones de eventos
 const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io, ad, ip) => {
     // Filtro de claves presentes en el JSON para determinar los datos solicitados
-    const keys_to_check = ["datostitular", "referencias", "flujollamadas", "flujosms", "radiobases", "imei", "datostitularref", "imeiref", "flujodatos", "recargas", "flujollamadasodeco"];
+    const keys_to_check = ["datostitular", "referencias", "flujollamadas", "flujosms", "radiobases", "imei", "datostitularref", "imeiref", "flujodatos", "recargas", "flujollamadasodeco", "llamadasOfuscado"];
     const keys_present = keys_to_check.filter(key => key in json);
     const result_string = keys_present.join(", ");
     
@@ -59,16 +59,16 @@ const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io, ad, ip
     } catch {
         ang = '';
     }
-    //console.log(ang)
+
     if ('flujollamadasodeco' in json){
-        if(ang.length > 0){
-            var xls = await resultadoOdeco(respo.datos1.nombre, json.fechaIni, json.fechaFin, ang, io, id, ad)
-            if (xls > 0) {
-                archivos += xls;
-                nuevoTexto += '\n-TRAFICO DE LLAMADAS ODECO ADJUNTO.\n';
-            } else {
-                nuevoTexto += '\n-NO HAY TRAFICO DE LLAMADAS ODECO.\n';
-            }
+        var dar = JSON.stringify(nuevoReqBody)
+        dar = JSON.parse(dar)
+        var ofuscado = 'llamadasOfuscado' in json ? true : false
+        console.log(ofuscado)
+        var xls = await resultadoOdeco(respo.datos1.nombre, json.fechaIni, json.fechaFin, dar.campo, io, id, ad, ofuscado)
+        if (xls > 0) {
+            archivos += xls;
+            nuevoTexto += '\n-TRAFICO DE LLAMADAS ODECO ADJUNTO.\n';
         } else {
             nuevoTexto += '\n-NO HAY TRAFICO DE LLAMADAS ODECO.\n';
         }
