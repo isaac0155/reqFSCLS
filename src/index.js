@@ -55,6 +55,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(passport.initialize());
 app.use(passport.session());
+app.set('trust proxy', true);
 
 //gloal variables
 app.use((req, res, next) => {

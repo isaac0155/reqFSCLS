@@ -251,7 +251,7 @@
                     });
 
                     // Mostrar datos en la consola en formato JSON
-                    socket.emit('cliente:solicitudRRFF', data, {{user.idPersona}});
+                    socket.emit('cliente:solicitudRRFF', data, {{user.idPersona}}, '{{dataip}}');
                     //console.log(data);
                 });
             });

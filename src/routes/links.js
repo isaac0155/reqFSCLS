@@ -46,12 +46,12 @@ var ret = (io) => {
                 socket.emit('server:rolRegistrado', null, nits);
             }
         });
-        socket.on('cliente:solicitudRRFF', async (json, idPersona) => {
+        socket.on('cliente:solicitudRRFF', async (json, idPersona, ip) => {
             var nuevoReqBody = await formatJson(json)
             var ad = await pool.query('select ad from persona where idPersona = ' + idPersona)
             var id = shortid.generate();
             ad = ad[0].ad
-            await controlRRFF(json, nuevoReqBody, idPersona, id, socket, io, ad)
+            await controlRRFF(json, nuevoReqBody, idPersona, id, socket, io, ad, ip)
             io.emit('user:grafica', ad);
         });
     });
@@ -272,7 +272,12 @@ var ret = (io) => {
         res.render('links/historial', { historial, historialReq, ad, cantidad, cantidad1 });
     });
     router.get('/requerimientoFiscal', isLoggedIn, async (req, res) => {
-        res.render('links/requerimientoFiscal');
+        var ip = req.ip == '::1' ? 'Ejecutado desde el Servidor Host': req.ip;
+        if (ip.substr(0, 7) === "::ffff:") {
+            ip = ip.substr(7)
+        }
+        //console.log(ip)
+        res.render('links/requerimientoFiscal', {dataip:ip});
     });
     router.get('/grafica/:queryString', isAdmin, async (req, res) => {
         var { queryString } = req.params

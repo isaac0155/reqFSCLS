@@ -43,9 +43,10 @@
                             <tr class="fw-lighter text-white bg-dark">
                                 {{#if user.Administrador}}
                                 {{/if}}
-                                <th scope="col">PM</th>
+                                <th scope="col">Ticket</th>
                                 <th scope="col">Nombre</th>
                                 <th scope="col">Fecha Hora</th>
+                                <th scope="col">IP</th>
                                 <th scope="col">Tipo</th>
                                 <th scope="col">Busqueda</th>
                                 <th scope="col">Datos</th>
@@ -66,6 +67,7 @@
                                 {{/neq}}
                                 <td>{{nombre}}</td>
                                 <td>{{fecha}}</td>
+                                <td>{{ip}}</td>
                                 <td>{{tipoBusqueda}}</td>
                                 <td style="max-width: 300px; word-break:break-all;">{{entradaBusqueda}}</td>
                                 <td style="max-width: 200px; word-break:break-all;">{{datoSolicitado}}</td>

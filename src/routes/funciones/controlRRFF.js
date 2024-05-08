@@ -20,7 +20,7 @@ const formatJson = (json) => {
 }
 
 // Función principal para el control de solicitudes RF, incluyendo inserciones en la base de datos y emisiones de eventos
-const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io, ad) => {
+const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io, ad, ip) => {
     // Filtro de claves presentes en el JSON para determinar los datos solicitados
     const keys_to_check = ["datostitular", "referencias", "flujollamadas", "flujosms", "radiobases", "imei", "datostitularref", "imeiref", "flujodatos", "recargas", "flujollamadasodeco"];
     const keys_present = keys_to_check.filter(key => key in json);
@@ -37,6 +37,7 @@ const controlRRFF = async (json, nuevoReqBody, idPersona, id, socket, io, ad) =>
             nombre = 'RF_${id}', 
             tipoBusqueda='${json.opcionSeleccionada}', 
             pm = '${json.pm}',
+            ip = '${ip}',
             body = '${JSON.stringify(nuevoReqBody)}';`);
 
     // Notificación al cliente sobre la solicitud en proceso
