@@ -24,4 +24,13 @@ module.exports ={
         var redirectUrl = '/signin' + req.originalUrl;
         return res.redirect(redirectUrl);
     },
+    isCall(req, res, next){
+        //console.log(req.originalUrl)
+        if (req.isAuthenticated() && (req.user.rol == 'ODECO' || req.user.rol == 'Segunda Linea')){
+            return next();
+        }
+        req.flash('danger', 'No tienes permiso para ver la página. Inicia Sesión como CC');
+        var redirectUrl = '/signin' + req.originalUrl;
+        return res.redirect(redirectUrl);
+    },
 }

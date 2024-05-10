@@ -37,7 +37,7 @@ router.post('/signin', isNotLoggedIn, (req, res, next)=>{
 });
 
 router.get('/profile',isLoggedIn,(req, res)=>{
-    //console.log(req.user)
+    console.log(req.user)
     res.render('profile');
 });
 

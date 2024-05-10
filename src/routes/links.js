@@ -8,10 +8,14 @@ const router = express.Router();
 const pool = require('../database');
 const { isLoggedIn } = require('../lib/auth')
 const { isAdmin } = require('../lib/auth')
+const { isCall } = require('../lib/auth')
 const { formatJson, controlRRFF } = require('./funciones/controlRRFF')
 const { convertirFecha } = require('./funciones/format');
 const upload = require('../lib/storage')
-const { restoreDatabase, backupDatabase } = require('../lib/config/backupMySQL')
+const { restoreDatabase, backupDatabase } = require('../lib/config/backupMySQL');
+const { select } = require('async');
+const resultadosSys = require('./funciones/system');
+const resultadoOdeco = require('./funciones/llamadasOdeco');
 
 var ret = (io) => {
     io.on("connection", (socket) => {
@@ -53,6 +57,33 @@ var ret = (io) => {
             ad = ad[0].ad
             await controlRRFF(json, nuevoReqBody, idPersona, id, socket, io, ad, ip)
             io.emit('user:grafica', ad);
+        });
+        socket.on('cleinte:newDetalleLlamadas', async (json) => {
+            var datos = json
+
+            if (datos && datos.ticket && datos.telefono && datos.fechaIni && datos.fechaFin && datos.ofuscado && datos.idPersona && datos.ip) {
+                var ofuscado = datos.ofuscado
+                var ofus = datos.ofuscado == '1' ? 'OFUSCADO' : 'COMPLETO'
+                var insert = {
+                    ticket: datos.ticket,
+                    telefono: datos.telefono,
+                    fechaIni: datos.fechaIni,
+                    fechaFin: datos.fechaFin,
+                    idPersona: datos.idPersona,
+                    ip: datos.ip,
+                    ofuscado
+                }
+                //console.log(insert, ofus)
+                var peticionescc = await pool.query('insert into peticionescc set ?', [insert])
+                socket.emit('server:buscandodetallellamadas', peticionescc.insertId)
+                var respuesta = await resultadoOdeco(peticionescc.insertId, insert.fechaIni, insert.fechaFin, [insert.telefono], io, ofus, json.ad, ofuscado)
+                //console.log(respuesta)
+                await pool.query('update peticionescc set resultado = ? where idPeticionescc = ?', [JSON.stringify(respuesta), peticionescc.insertId])
+                io.emit('server:recargardetalledellamadas'+peticionescc.insertId)
+                //res.redirect('/links/detallellamadas/resultado/' + peticionescc.insertId)
+            } else {
+                
+            }
         });
     });
     /** */
@@ -272,12 +303,12 @@ var ret = (io) => {
         res.render('links/historial', { historial, historialReq, ad, cantidad, cantidad1 });
     });
     router.get('/requerimientoFiscal', isLoggedIn, async (req, res) => {
-        var ip = req.ip == '::1' ? 'Ejecutado desde el Servidor Host': req.ip;
+        var ip = req.ip == '::1' ? 'Ejecutado desde el Servidor Host' : req.ip;
         if (ip.substr(0, 7) === "::ffff:") {
             ip = ip.substr(7)
         }
         //console.log(ip)
-        res.render('links/requerimientoFiscal', {dataip:ip});
+        res.render('links/requerimientoFiscal', { dataip: ip });
     });
     router.get('/grafica/:queryString', isAdmin, async (req, res) => {
         var { queryString } = req.params
@@ -400,6 +431,27 @@ var ret = (io) => {
         req.flash('success', 'Base de Datos Restaurada a fecha ' + req.body.nombre)
         res.redirect('/')
     });
+    router.get('/detallellamadas', isLoggedIn, async (req, res) => {
+        var ip = req.ip == '::1' || '127.0.0.1' ? 'Ejecutado desde el Servidor Host' : req.ip;
+        if (ip.substr(0, 7) === "::ffff:") {
+            ip = ip.substr(7)
+        }
+        res.render('links/peticionesCallCenter', { ip })
+    });
+    router.get('/detallellamadas/resultado/:id', isLoggedIn, async (req, res) => {
+        var id = req.params.id
+        var resultado = await pool.query('select a.*, b.ad ad from peticionescc a, persona b where a.idPersona = b.idPersona and a.idPeticionescc = ?', id)
+        resultado = resultado[0]
+        res.render('links/ccResultado', { resultado })
+    });
+    router.get('/historialdetalledellamadas', isLoggedIn, async (req, res) => {
+        var historial = await pool.query('select a.*, b.ad ad from peticionescc a, persona b where a.idPersona = b.idPersona and a.idPersona = ? order by a.idPeticionescc desc', [req.user.idPersona])
+        res.render('links/historialdetalledellamadas', { historial })
+    });
+    router.get('/panel/historialdetallellamadas/sistem', isAdmin, async (req, res) => {
+        var historial = await pool.query('select a.*, b.ad ad from peticionescc a, persona b where a.idPersona = b.idPersona order by a.idPeticionescc desc')
+        res.render('panel/historialdetalledellamadas', { historial })
+    });
 
 
     function encontrarFechasExtremas(datos) {
@@ -440,7 +492,23 @@ var ret = (io) => {
 
         return datosCompletos;
     }
+    function formatDateTime(date) {
+        let year = date.getFullYear();
+        let month = date.getMonth() + 1; // getMonth() devuelve un índice basado en 0, así que se suma 1
+        let day = date.getDate();
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        let seconds = date.getSeconds();
 
+        // Asegúrate de que todos los componentes de un solo dígito tengan dos dígitos
+        month = month < 10 ? '0' + month : month;
+        day = day < 10 ? '0' + day : day;
+        hours = hours < 10 ? '0' + hours : hours;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
 
 
     /** */

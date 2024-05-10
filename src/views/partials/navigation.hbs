@@ -2,7 +2,7 @@
    <nav class="navbar navbar-expand-lg colorNav">
         <div class="container">
             <a class="navbar-brand text-white" href="/">
-            Requerimientos Fiscales</a>
+            Datos Nuevatel</a>
             <button class="navbar-toggler" id="newLinkBtn" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -10,12 +10,23 @@
             <div class="collapse navbar-collapse " id="navbarNav">
                 <ul class="navbar-nav ms-auto ">
                     
-                    {{#if user}}    
+                    {{#if user}}
+                    <!-- Contenido para mostrar si el usuario es 'ODECO' o 'Segunda Linea' -->
                         <li class="nav-item">
-                            <a class="nav-link position-relative text-white" id="newLink" href="/links/requerimientoFiscal" role="button">
-                                <img src="/img/mazo.png" style="margin-right: -1px; margin-top:-5px" alt="" width="18" height="18"> Consultar un Requerimiento
+                            <a class="nav-link position-relative text-white" id="" href="/links/detallellamadas/" role="button">
+                                <img src="/img/call.png" style="margin-right: -1px; margin-top:-5px" alt="" width="18" height="18"> Detalle de Llamadas
                             </a>
                         </li>
+                        {{#hasAnyRole user "ODECO,Segunda Linea"}}
+                        {{else}}
+                        <!-- Contenido para mostrar si el usuario no tiene ninguno de los roles -->
+                            <li class="nav-item">
+                                <a class="nav-link position-relative text-white" id="newLink" href="/links/requerimientoFiscal" role="button">
+                                    <img src="/img/mazo.png" style="margin-right: -1px; margin-top:-5px" alt="" width="18" height="18"> Consultar un Requerimiento
+                                </a>
+                            </li>
+                        {{/hasAnyRole}}
+
                         <li class="nav-item dropdown text-white">
                             <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown"
                                 aria-expanded="false">
@@ -30,9 +41,17 @@
                                 </li>
                                 {{/if}}
                                 {{#if user}}
+                                {{#hasAnyRole user "ODECO,Segunda Linea"}}
+                                {{else}}
                                 <li>
                                     <a class="dropdown-item" id="newLink" href="/links/historial" role="button">
-                                        <img src="/img/file.png" style="" alt="" width="18" height="18"> Mi Historial
+                                        <img src="/img/file.png" style="" alt="" width="18" height="18"> Mi Historial de RRFF
+                                    </a>
+                                </li>
+                                {{/hasAnyRole}}
+                                <li>
+                                    <a class="dropdown-item" id="newLink" href="/links/historialdetalledellamadas" role="button">
+                                        <img src="/img/file.png" style="" alt="" width="18" height="18">Historial de Detalle de Llamadas
                                     </a>
                                 </li>
                                 {{/if}}

@@ -63,4 +63,12 @@ helpers.or = function (arg1, arg2, options) {
     return (arg1 || arg2) ? options.fn(this) : options.inverse(this);
 };
 
+// Helper para verificar si el usuario tiene alguno de los roles especificados
+helpers.hasAnyRole = function (user, roles, options) {
+    var rolesArray = roles.split(','); // Convierte la cadena de roles en un array
+    var hasRole = rolesArray.some(role => user.rol === role.trim()); // Verifica si alguno de los roles coincide
+    return hasRole ? options.fn(this) : options.inverse(this);
+};
+
+
 module.exports = helpers;
