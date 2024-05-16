@@ -30,7 +30,6 @@
     "mysql": "^2.2.0",
     "mysql2": "^3.0.1",
     "mysqldump": "^3.2.0",
-    "node-odbc": "^0.2.10",
     "node-schedule": "^2.1.1",
     "odbc": "^2.4.8",
     "oracledb": "^5.2.0",
