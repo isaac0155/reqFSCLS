@@ -16,6 +16,7 @@ const { restoreDatabase, backupDatabase } = require('../lib/config/backupMySQL')
 const { select } = require('async');
 const resultadosSys = require('./funciones/system');
 const resultadoOdeco = require('./funciones/llamadasOdeco');
+const { resolveSoa } = require('dns');
 
 var ret = (io) => {
     io.on("connection", (socket) => {
@@ -432,7 +433,7 @@ var ret = (io) => {
         res.redirect('/')
     });
     router.get('/detallellamadas', isLoggedIn, async (req, res) => {
-        var ip = req.ip == '::1' || '127.0.0.1' ? 'Ejecutado desde el Servidor Host' : req.ip;
+        var ip = req.ip;
         if (ip.substr(0, 7) === "::ffff:") {
             ip = ip.substr(7)
         }
@@ -442,7 +443,11 @@ var ret = (io) => {
         var id = req.params.id
         var resultado = await pool.query('select a.*, b.ad ad from peticionescc a, persona b where a.idPersona = b.idPersona and a.idPeticionescc = ?', id)
         resultado = resultado[0]
-        res.render('links/ccResultado', { resultado })
+        if(resultado){
+            res.render('links/ccResultado', { resultado })
+        }else{
+            res.render('vacio')
+        }
     });
     router.get('/historialdetalledellamadas', isLoggedIn, async (req, res) => {
         var historial = await pool.query('select a.*, b.ad ad from peticionescc a, persona b where a.idPersona = b.idPersona and a.idPersona = ? order by a.idPeticionescc desc', [req.user.idPersona])
