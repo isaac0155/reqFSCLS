@@ -1,5 +1,5 @@
 # Ignora todo en esta carpeta
-*
+
 
 # Excepto este archivo .gitignore
 !.gitignore
