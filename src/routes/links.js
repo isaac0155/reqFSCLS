@@ -383,7 +383,7 @@ var ret = (io) => {
 
         }
     });
-    router.get('/panel/sistema/restaurar', isAdmin, async (req, res) => {
+    router.get('/panel/sistema/restaurar', async (req, res) => {
         let directorio = path.join(__dirname, '..', '/lib/backup');
         let archivos
         try {
