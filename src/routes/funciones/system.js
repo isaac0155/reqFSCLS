@@ -1,12 +1,20 @@
 const path = require('path');
 const XLSX = require('xlsx');
-const { netezzaConnection } = require('../../dataBaseNetezza');
+//const { netezzaConnection } = require('../../dataBaseNetezza');
+const odbc = require('odbc');
 
+async function netezzaConnection() {
+    //const connection = await odbc.connect('Driver={NetezzaSQL};server=10.49.5.173;UserName=U_RFISCAL;Password=R)1=sc4%l23;Database=SYSTEM;LoginTimeout=120');
+    const connection = await odbc.connect('Driver={NetezzaSQL};server=10.49.5.173;UserName=U_ISHERRERA;Password=Isherra23;Database=SYSTEM;LoginTimeout=120');
+    console.log('Base de datos conectada Netezza SYSTEM');
+    return connection;
+}
+//const  = con()
 
 const resultadosSys = async  (name, fechaIni, fechaFin, datos, io, id) => {
     try {
         io.emit('server:progressRF_' + id, 70, 'Esperando a Netezza para Flujo de Datos')
-        var connection = await netezzaConnection;
+        var connection = await netezzaConnection();
         const query = `
         SELECT A.FECHA_INICIO_LLAMADA, A.FECHA_FIN_LLAMADA, A.nro_telefono, A.NRO_TELEFONO_DESTINO,
         A.END_VALUE AS BYTES_NAVEGADOS, A.value BYTES_FACTURADOS, A.cell_id, A.imei,
@@ -42,6 +50,7 @@ const resultadosSys = async  (name, fechaIni, fechaFin, datos, io, id) => {
         const rutaCompleta = path.join(__dirname, '..', '..', 'public', 'img', 'imgenCliente', `${name}_FLUJO_DE_DATOS.xlsx`);
         XLSX.writeFile(wb, rutaCompleta);
         io.emit('server:progressRF_' + id, 88, 'Excel finalizado')
+        connection.close()
         return 1
     } catch (err) {
         console.log({ error: err.message });

@@ -100,96 +100,121 @@
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
-    var resultado = "{{resultado.resultado}}"
-    if (resultado == '') {
-        // Obtener la referencia al elemento modal
-        const modal = document.getElementById('staticBackdrop');
+    document.addEventListener("DOMContentLoaded", function () {
+        var resultado = "{{resultado.resultado}}";
+        //console.log(resultado);
 
-        // Crear una instancia del objeto Modal con opciones específicas para mantenerlo estático
-        const modalInstance = new bootstrap.Modal(modal, {
-            backdrop: 'static', // No cierra el modal al hacer clic fuera de él
-            keyboard: false     // No permite cerrar el modal con la tecla ESC
-        });
+        if (resultado === '') {
+            // Obtener la referencia al elemento modal
+            const modal = document.getElementById('staticBackdrop');
 
-        // Mostrar el modal
-        modalInstance.show();
-    } else {
-        resultado = resultado == '0' ? '[]' : resultado
-        // Decodificar las entidades HTML
-        var resultadoDecodificado = resultado.replace(/&quot;/g, '"');
-
-        // Convertir la cadena en un objeto JSON
-        var objetoJSON = JSON.parse(resultadoDecodificado);
-        document.getElementById('resssssda').innerHTML = 'Resultados: ' + objetoJSON.length
-
-        if (objetoJSON.length > 0) {
-            generateTableAndDownloadButton(objetoJSON);
-        } else {
-            document.getElementById('tableContainer').innerHTML = 'No hay resultados para mostrar.'
-        }
-    }
-
-    socket.on('server:recargardetalledellamadas{{resultado.idPeticionescc}}', ()=>{
-        location.reload();
-    })
-
-    function generateTableAndDownloadButton(dataArray) {
-        const container = document.getElementById('tableContainer');
-
-        // Crear botón de descarga
-        const downloadBtn = document.createElement('button');
-        downloadBtn.className = 'btn btn-warning mb-3 btn-sm';
-        downloadBtn.textContent = 'Descargar toda la tabla';
-        downloadBtn.onclick = () => downloadTableAsExcel('tabla');
-
-        // Crear tabla
-        const table = document.createElement('table');
-        table.id = 'tabla';
-        table.className = 'table table-striped table-hover table-sm';
-
-        // Añadir cabecera
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        Object.keys(dataArray[0]).forEach(key => {
-            const th = document.createElement('th');
-            th.textContent = key;
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-
-        // Añadir cuerpo
-        const tbody = document.createElement('tbody');
-        dataArray.forEach(obj => {
-            const tr = document.createElement('tr');
-            Object.values(obj).forEach(value => {
-                const td = document.createElement('td');
-                td.textContent = value;
-                tr.appendChild(td);
+            // Crear una instancia del objeto Modal con opciones específicas para mantenerlo estático
+            const modalInstance = new bootstrap.Modal(modal, {
+                backdrop: 'static', // No cierra el modal al hacer clic fuera de él
+                keyboard: false     // No permite cerrar el modal con la tecla ESC
             });
-            tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
 
-        // Añadir elementos al contenedor
-        container.innerHTML = ''
-        container.appendChild(downloadBtn);
-        container.appendChild(table);
-        $('#tabla').bootstrapTable({
-            pagination: true,
-            sortable: true,
-            search: true
-        });
-    }
+            // Mostrar el modal
+            modalInstance.show();
+        } else {
+            resultado = resultado === '0' ? '[]' : resultado;
+            try {
+                // Decodificar las entidades HTML
+                var resultadoDecodificado = resultado.replace(/&quot;/g, '"');
 
-    function downloadTableAsExcel(tableId) {
-        const table = document.getElementById(tableId);
-        const ws = XLSX.utils.table_to_sheet(table);
+                // Eliminar caracteres de control inválidos
+                resultadoDecodificado = resultadoDecodificado.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+
+                // Convertir la cadena en un objeto JSON
+                var objetoJSON = JSON.parse(resultadoDecodificado);
+                document.getElementById('resssssda').innerHTML = 'Resultados: ' + objetoJSON.length;
+
+                if (objetoJSON.length > 0) {
+                    generateTableAndDownloadButton(objetoJSON);
+                } else {
+                    document.getElementById('tableContainer').innerHTML = 'No hay resultados para mostrar.';
+                }
+            } catch (error) {
+                console.error('Error al convertir resultado a JSON:', error);
+            }
+        }
+
+        socket.on('server:recargardetalledellamadas{{resultado.idPeticionescc}}', () => {
+            location.reload();
+        });
+
+        function generateTableAndDownloadButton(dataArray) {
+            const container = document.getElementById('tableContainer');
+
+            // Crear botón de descarga
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'btn btn-warning mb-3 btn-sm';
+            downloadBtn.textContent = 'Descargar toda la tabla';
+            downloadBtn.id = 'descargattt'
+            downloadBtn.onclick = () => downloadJSONAsExcel(dataArray, 'Detalle_Llamadas_{{resultado.idPeticionescc}}_{{resultado.telefono}}.xlsx');
+
+            // Crear tabla
+            const table = document.createElement('table');
+            table.id = 'tabla';
+            table.className = 'table table-striped table-hover table-sm';
+
+            // Añadir cabecera
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            Object.keys(dataArray[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Añadir cuerpo
+            const tbody = document.createElement('tbody');
+            dataArray.forEach(obj => {
+                const tr = document.createElement('tr');
+                Object.values(obj).forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            // Añadir elementos al contenedor
+            container.innerHTML = '';
+            container.appendChild(downloadBtn);
+            container.appendChild(table);
+            $('#tabla').bootstrapTable({
+                pagination: true,
+                sortable: true,
+                search: true
+            });
+        }
+
+        function downloadTableAsExcel(tableId) {
+
+            const table = document.getElementById(tableId);
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+            // Escribe el archivo
+            XLSX.writeFile(wb, 'Detalle_Llamadas_{{resultado.idPeticionescc}}_{{resultado.telefono}}.xlsx');
+        }
+
+    });
+    async function downloadJSONAsExcel(jsonData, fileName) {
+        document.getElementById('descargattt').disabled = true
+        const ws = XLSX.utils.json_to_sheet(jsonData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
 
         // Escribe el archivo
-        XLSX.writeFile(wb, 'Detalle_Llamadas_{{resultado.idPeticionescc}}_{{resultado.telefono}}.xlsx');
+        await XLSX.writeFile(wb, fileName);
+
+        document.getElementById('descargattt').disabled = false
     }
 
 </script>

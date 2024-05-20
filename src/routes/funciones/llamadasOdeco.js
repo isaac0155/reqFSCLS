@@ -91,6 +91,7 @@ const resultOdeco = async (name, fechaIni, fechaFin, datos, io, id, ad, ofuscado
                     i += 1;  // Incrementar contador o índice según la lógica original
                 }
             }
+            connection.close()
 
         } catch (err) {
             console.log({ error: err.message });
